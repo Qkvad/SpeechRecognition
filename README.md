@@ -6,3 +6,9 @@
 - @ivceh - SVD
 - @Qkvad & @sandrolovnicki - TensorFlow
 - Android App (optional)
+
+## Data
+
+https://www.kaggle.com/c/tensorflow-speech-recognition-challenge/data
+
+
