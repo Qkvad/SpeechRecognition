@@ -6,6 +6,7 @@
 - @ivceh - SVD
 - @Qkvad & @sandrolovnicki - TensorFlow
 - Android App (optional)
+- Hidden Markov Models
 
 ## Data
 
