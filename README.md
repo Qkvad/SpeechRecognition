@@ -60,4 +60,6 @@ Additionally, you can record your own sounds and test them, just make sure they 
 ```
 arecord test.wav -r 16000 -d 1 -f S16_LE
 ```
+## octave
 
+In this directory we implement simple octave function to get spectrogram from the .wav file. 

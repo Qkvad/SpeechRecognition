@@ -6,7 +6,7 @@ function get_spectrogram
   
   figure(2)
   step=fix(10*fs/1000); %one spectral slice every 10ms
-  window=fix(80*fs/1000); %40ms data window
+  window=fix(30*fs/1000); %30ms data window
   fftn=2^nextpow2(window); 
   [S,f,t]=specgram(y,fftn,fs,window,window-step);
   S=abs(S(2:fftn*4000/fs,:));
