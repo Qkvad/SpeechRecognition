@@ -22,7 +22,7 @@ In this directory, we implement a tensorflow approach to the problem with multip
 
 First off, we need to run training script which will download needed dataset in data/ folder if it is not already there and start training the model. We advise that one first inspects `tf/src/train.py` file, especially possible parser arguments which could be easily understood and tweaked as desired.  
 
-To train a simplest model (neural network with one hidden layer) which is currently defaulr `--model_architecture` parameter, just run the train script from your anaconda environment:
+To train a simplest model (neural network with one hidden layer) which is currently default `--model_architecture` parameter, just run the train script from your anaconda environment:
 ```bash
 python tf/src/train.py
 ```
@@ -31,11 +31,11 @@ python tf/src/train.py
 python tf/src/train.py --model_architecture=conv
 ```  
 
-Next, once we are satisfied with the performance of our model (irregardles of whether model finished its training or yout interupted it (just be sure you have `labels.txt`)), we need to "freeze" our tensorflow graph so we could reuse it for predicting.
+Next, once we are satisfied with the performance of our model (irregardles of whether model finished its training or you interupted it (just be sure you have `labels.txt`)), we need to "freeze" our tensorflow graph so we could reuse it for predicting.
 ```bash
 python tf/src/freeze.py \
 --model_architecture=single_fc \
---start_checkpoint=tf/logs/single_fc/train_progress/single_fc.ck-pt-2400 \
+--start_checkpoint=tf/logs/single_fc/train_progress/single_fc.ckpt-2400 \
 --output_file=tf/models/single_fc_032.pb
 ```  
 
@@ -53,7 +53,7 @@ up (score = 0.22972)
 _silence_ (score = 0.16772)
 ```  
 
-**Info:** In `models/`, there is also a "frozen" convolutional network model `conv0875.pb` we trained, which you can test to make sure it really is performing better than rest, without the need for yout to train it for days. 
+**Info:** In `models/`, there is also a "frozen" convolutional network model `conv0875.pb` we trained, which you can test to make sure it really is performing better than rest, without the need for you to train it for days. 
 
 Additionally, you can record your own sounds and test them, just make sure they are 1s long and of right format.  
 **Hint:** Try with
