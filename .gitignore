@@ -1,3 +1,6 @@
+# ignore current training logs
+tf/logs/current/*
+
 # ignore training data
 data/*
 
