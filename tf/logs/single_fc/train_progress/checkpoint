@@ -1,0 +1,6 @@
+model_checkpoint_path: "single_fc.ckpt-2400"
+all_model_checkpoint_paths: "single_fc.ckpt-2000"
+all_model_checkpoint_paths: "single_fc.ckpt-2100"
+all_model_checkpoint_paths: "single_fc.ckpt-2200"
+all_model_checkpoint_paths: "single_fc.ckpt-2300"
+all_model_checkpoint_paths: "single_fc.ckpt-2400"
