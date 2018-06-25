@@ -44,7 +44,7 @@ And finnaly, let's predict something with our graph:
 python tf/src/label_wav.py \
 --graph=tf/models/single_fc_032.pb \
 --wav=data/left/a5d485dc_nohash_0.wav \
---labels=tf/logs/single_fc/train_progress/labels.txt
+--labels=tf/logs/single_fc/train_progress/single_fc_labels.txt
 ```  
 which gives us lousy (as expected) values
 ```
@@ -53,7 +53,7 @@ up (score = 0.22972)
 _silence_ (score = 0.16772)
 ```  
 
-**Info:** In `models/`, there is also a "frozen" convolutional network model `conv086.pb` we trained, which you can test to make sure it really is performing better than rest, without the need for yout to train it for days. 
+**Info:** In `models/`, there is also a "frozen" convolutional network model `conv0875.pb` we trained, which you can test to make sure it really is performing better than rest, without the need for yout to train it for days. 
 
 Additionally, you can record your own sounds and test them, just make sure they are 1s long and of right format.  
 **Hint:** Try with
