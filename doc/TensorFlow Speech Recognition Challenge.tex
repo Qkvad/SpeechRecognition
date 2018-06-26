@@ -1,0 +1,144 @@
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[twoside]{article}
+
+\usepackage[sc]{mathpazo} % Use the Palatino font
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\linespread{1.05} % Line spacing - Palatino needs more space between lines
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+
+\usepackage[english]{babel} % Language hyphenation and typographical rules
+
+\usepackage[hmarginratio=1:1,top=32mm,columnsep=20pt]{geometry} % Document margins
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+
+\usepackage{lettrine} % The lettrine is the first enlarged letter at the beginning of the text
+
+\usepackage{enumitem} % Customized lists
+\setlist[itemize]{noitemsep} % Make itemize lists more compact
+
+\usepackage{titlesec} % Allows customization of titles
+\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
+\renewcommand\thesubsection{\roman{subsection}} % roman numerals for subsections
+\titleformat{\section}[block]{\large\scshape\centering}{\thesection.}{1em}{} % Change the look of the section titles
+\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the section titles
+
+\usepackage{fancyhdr} % Headers and footers
+\pagestyle{fancy} % All pages have headers and footers
+\fancyhead{} % Blank out the default header
+\fancyfoot{} % Blank out the default footer
+\fancyhead[C]{TensorFlow Speech Recognition Challenge $\bullet$ May 2018} % Custom header text
+\fancyfoot[RO,LE]{\thepage} % Custom footer text
+
+\usepackage{titling} % Customizing the title section
+
+\usepackage{hyperref} % For hyperlinks in the PDF
+
+\usepackage{multicol}
+\usepackage{graphicx}
+\graphicspath{{img/}}
+\usepackage{float}
+\renewcommand{\figurename}{Fig.}
+
+\usepackage{amssymb,amsmath,amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{defn}{Definition}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\setlength{\droptitle}{-4\baselineskip} % Move the title up
+
+\pretitle{\begin{center}\Huge\bfseries} % Article title formatting
+\posttitle{\end{center}} % Article title closing formatting
+\title{TensorFlow Speech Recognition Challenge} % Article title
+
+\author{%
+\textsc{Petra Br\v{c}i\'c}\\% \\[1ex] 
+\normalsize Applied Mathematics \\
+\normalsize \href{mailto:petrabrcic94@gmail.com}{petrabrcic94@gmail.com} 
+\and
+\textsc{Ivan \v{C}eh}\\% \\[1ex] 
+\normalsize Computer Science \\
+\normalsize \href{mailto:ivan.ceh1234@gmail.com}{ivan.ceh1234@gmail.com} 
+\and
+\textsc{Sandro Lovni\v{c}ki}\\% \\[1ex] 
+\normalsize Computer Science \\ 
+\normalsize \href{mailto:lovnicki.sandro@gmail.com}{lovnicki.sandro@gmail.com}
+}
+
+\date{\today} 
+\renewcommand{\maketitlehookd}{%
+\noindent \textbf{\\Abstract:} We are witnessing the significant development of the blooming relationship between science and technology. Humanity is striving on making everyday life easier and more controllable by the integration of the intelligent machines. We want to control those machine easier, such as by spoken commands. This is where this project comes in and answers that question.
+\\\\
+\textbf{Keywords:} tensorflow, speech recognition, audio recognition, feature extraction, MFCC.
+}
+
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+% Print the title and table of contents
+\maketitle
+\tableofcontents
+\newpage
+
+%----------------------------------------------------------------------------------------
+%	ARTICLE CONTENTS
+%----------------------------------------------------------------------------------------
+\begin{multicols}{2}
+
+\section{Introduction}
+
+\ldots
+for which our code can be found at our \hyperref[https://github.com/Qkvad/3rdOrderTensors]{GitHub repository}\footnote{https://github.com/Qkvad/SpeechRecognition}.
+
+%------------------------------------------------
+\section{Data}
+
+\subsection{Preprocessing}
+
+%------------------------------------------------
+\section{Machine Learning}
+
+\subsection{Convolutional Neural Network}
+
+\subsection{Results}
+
+%------------------------------------------------
+\section{Different Approaches}
+
+
+%------------------------------------------------
+
+
+%----------------------------------------------------------------------------------------
+%	REFERENCE LIST
+%----------------------------------------------------------------------------------------
+
+\begin{thebibliography}{99}
+
+\bibitem[1]{kilmer-braman-hao}
+Misha E. Kilmer, Karen Braman, Ning Hao.
+\newblock Third Order Tensors as Operators on Matrices: A
+Theoretical and Computational Framework with
+Applications in Imaging
+
+\bibitem[2]{kilmer-martin}
+Misha E. Kilmer, Carla D. Martin.
+\newblock Factorization Strategies for Third-order Tensors
+
+ 
+\end{thebibliography}
+
+%----------------------------------------------------------------------------------------
+
+\end{multicols}{2}
+\end{document}
