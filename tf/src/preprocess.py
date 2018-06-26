@@ -55,7 +55,10 @@ def main(_):
   scaled_foreground = sess.run(tf.multiply(audio, FLAGS.scale_factor))
   print('scaled:', scaled_foreground.shape)
   
-  time_shift_amount = np.random.randint(-FLAGS.time_shift, FLAGS.time_shift)
+  if FLAGS.time_shift == 0:
+    time_shift_amount = 0
+  else:
+    time_shift_amount = np.random.randint(-FLAGS.time_shift, FLAGS.time_shift)
   if time_shift_amount > 0:
     time_shift_padding = [[time_shift_amount, 0], [0, 0]]
     time_shift_offset = [0, 0]
@@ -93,7 +96,7 @@ def main(_):
   current_wav = sliced_foreground
   noise_add = current_wav
 
-  if FLAGS.add_noise is True:
+  if bool(FLAGS.add_noise):
     ''' loads and reads noise audio file '''
     wav_loader = io_ops.read_file(FLAGS.noise_input_wav)
     wav_decoder = contrib_audio.decode_wav(
@@ -103,7 +106,7 @@ def main(_):
         wav_decoder.sample_rate,
         wav_decoder.audio
       ])
-    noise_audio *= FLAGS.noise_scale_factor
+    noise_audio = sess.run(tf.multiply(noise_audio, FLAGS.noise_scale_factor))
 
     #plt.figure(4)
     #plt.plot(np.concatenate(noise_audio,axis=0))
@@ -144,6 +147,8 @@ def main(_):
   fig.colorbar(cax)
   ax.set_title('spectrogram')
   plt.show()'''
+
+  print(spectrogram)
   
   spectrogram_length = desired_samples / window_size_samples
   
@@ -186,17 +191,21 @@ def main(_):
 
   ax5.set_title('spectrogram')
   ax5.matshow(spectrogram[0], 
-                   interpolation='nearest', 
-                   aspect='auto', 
-                   cmap='gist_ncar')
+              interpolation='nearest', 
+              aspect='auto', 
+              cmap=plt.get_cmap('Greys_r'),
+              origin='lower')
+  ax5.xaxis.set_ticks_position('bottom')
 
   ax6.set_title('MFCC')
   ax6.matshow(mfcc[0], 
              interpolation='nearest', 
              aspect='auto', 
-             cmap=cm.afmhot, 
+             cmap=plt.get_cmap('Greys_r'), 
              origin='lower')
+  ax6.xaxis.set_ticks_position('bottom')
 
+  plt.tight_layout()
   plt.show()
     
 
@@ -223,44 +232,44 @@ if __name__=='__main__':
 
   parser.add_argument(
     '--add_noise',
-    type=bool,
-    default=True,
+    type=int,
+    default=1,
     help='whether to add noise.')
 
   parser.add_argument(
     '--noise_input_wav',
     type=str,
-    default='data/_background_noise_/doing_the_dishes.wav',
+    default='data/_background_noise_/white_noise.wav',
     help='noise .wav files.')
 
   parser.add_argument(
     '--noise_scale_factor',
     type=float,
-    default=0.0,
+    default=0.15,
     help='coefficient to scale noise volume by.')
     
   parser.add_argument(
     '--time_shift',
     type=float,
-    default=200.0,
-    help='range to randomly shift audio in time.')
+    default=100.0,
+    help='range to randomly shift audio in time (ms).')
     
   parser.add_argument(
     '--scale_factor',
     type=float,
-    default=2.0,
+    default=1.0,
     help='coefficient to scale volume by.')
     
   parser.add_argument(
     '--window_size_ms',
-    type=int,
-    default=20,
+    type=float,
+    default=30.0,
     help=' --- ')
     
   parser.add_argument(
     '--window_stride_ms',
-    type=int,
-    default=8,
+    type=float,
+    default=10.0,
     help=' --- ')
     
   parser.add_argument(
