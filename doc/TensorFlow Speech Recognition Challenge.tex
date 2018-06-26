@@ -116,10 +116,26 @@ First, let us observe what the data looks like after reading the audio file. \\
  
 \begin{Figure}
 	\centering
-	\includegraphics[width=0.8\textwidth]{happy-read}
-	\captionof{figure}{Waveform - Sound preasure / Time(ms)}
+	\includegraphics[width=1.0\textwidth]{happy-read1}
+	\captionof{figure}{Waveform for audio 'happy'}
 	\label{img:pocetnoStanje}
 \end{Figure}
+
+Creating a spectrogram using FFT is a digital process. Digitally sampled data (which ours is), in time domain, is broken up into chunks, which usually overlap, and Fourier transformed to calculate the magnitude of the frequency spectrum for each chunk. Each chunk then corresponds to a vertical line in the image; a measurement of magnitude versus frequency for a specific moment in time (the midpoint of the chunk). These spectrums or time plots are then laid side by side to form the image or a three-dimensional surface, or slightly overlapped in various ways, i.e. windowing. This process essentially corresponds to computing the squared magnitude of the short-time Fourier transform (STFT) of the signal x(t) - that is, for a window $\omega$,
+\[ spectrogram(t,\omega)=|STFT(t,\omega)|^2 ,\]
+where 
+\begin{align*} STFT \lbrace x[n] \rbrace (m,\omega)&\equiv X(m,\omega) \\ 
+&=\sum_{n=-\infty}^{\infty} x[n]\omega [n-m]e^{-j\omega n}.
+\end{align*}
+The STFT is performed on a computer so it uses the FFT (Fast Fourier Transform), so all the variables are discrete and quantized. \\
+After running our code in Octave to generate spectrogram yield the figure~\ref{img:specgramStanje} \\
+\begin{Figure}
+	\centering
+	\includegraphics[width=1.0\textwidth]{happy-specgram}
+	\captionof{figure}{Spectogram for audio 'happy'}
+	\label{img:specgramStanje}
+\end{Figure}
+
 %------------------------------------------------
 \section{Machine Learning}
 
