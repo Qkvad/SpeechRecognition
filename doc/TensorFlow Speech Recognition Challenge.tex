@@ -132,25 +132,83 @@ After running our code in Octave to generate spectrogram yield the figure~\ref{i
 \begin{Figure}
 	\centering
 	\includegraphics[width=1.0\textwidth]{happy-specgram}
-	\captionof{figure}{Spectogram for audio 'happy', 80ms window with 10ms step}
+	\captionof{figure}{Spectogram for audio 'happy'}
 	\label{img:specgramStanje}
 \end{Figure}
-Our code works slightly different, first we scale the volume, then we shift it in time, add background noise and then calculate spectrogram. But for all the features of spectrogram to be easily visible on the paper form, we added the octave function to obtain the standard version of the spectrogram.\\
-There is one more thing we have to dig into, that is getting from spectrogram to the image that is going to feed the machine learning algorithm. Final output of the preprocess is mel-frequency cepstrum \footnote{Cepstrum (the name derived by reversing the first four letters of "spectrum", whereas operations on cepstra are labeled quefrency analysis, liftering or cepstral analysis) is the result of IFT of the logarithm of the estimated spectrum of a signal} coefficients (MFCCs), the coefficients that make up an MFC. MFC is a representation of the short-term power spectrum of a sound, based on a linear cosine transform of a log power spectrum on a nonlinear mel scale of frequency. This frequency wraping can allow for better representation of sound in audio compression. \\
-MFCCs are derived as follows:
-\begin{enumerate}
-	\item Take the Fourier transform of (a window excerpt of) a signal
-	\item Map the powers of the spectrum obtained above onto the mel scale, using triangular overlapping windows
-	\item Take the logs of the powers at each of the mel frequencies
-	\item Take the discrete cosine transform of the list of mel log powers, as if it were a signal
-	\item The MFCCs are the amplitued of the resulting spectrum.
-\end{enumerate}
+
 %------------------------------------------------
 \section{Machine Learning}
+In order to classify processed audio data into known classes ("up","down",\ldots), we use a neural network model, specifically - a convolutional neural network (CNN). It is important to notice that audio samples corresponding to the same word need not to "look" the same. For example, one speaker may had began speaking later than the other. CNNs have had the most success in dealing with classifying such data and we say that CNN model is thus \emph{spatially invariant}.
+
+Specifically, as is reported in~\cite{our-conv}, CNNs outperform Deep Neural Networks which outperform Hidden Markov Model system, which is a commonly used technique for keyword spotting.\\
+To put it simply and stress this fact's importance, we can write
+\[ CNN > DNN > HMM \]
+where $> = \{(x,y): x,y \text{ are classifiers}\}$ and $(x,y) \in >$ if and only if $x$ performs better that $y$ on a given dataset.
 
 \subsection{Convolutional Neural Network}
+We use a convolutional neural network model described in~\cite{our-conv}, with two layers or convolution. The task of convolution layers is to extract features in a spatially invariant manner and it is their output that finally goes into fully connected hidden layers such as in ordinary neural network.
 
-\subsection{Results}
+\subsection{Training}
+To be honest, training a convolutional neural network with our dataset of over $100000$ audio samples was not a walk in the park. On a fairly strong laptop, it took us about 19 hours for $15000$ training steps with learning rate of $0.001$ and $3000$ training steps with learning rate $0.0001$ for finner descent.
+
+Some of the important parameters for training the model are: \code{wanted\_words}, \code{batch\_size}, \code{learning\_rate}, \code{how\_many\_training\_steps}, \code{clip\_duration\_ms}, \code{data\_dir}, \ldots
+
+Most important parameters that control the preprocessing are: \code{background\_volume}, \code{silence\_percentage}, \code{unknown\_percentage}, \code{time\_shift\_ms}, \code{window\_size\_ms},\\ \code{window\_stride\_ms}, \code{dct\_coefficient\_count}, \ldots
+
+Let us observe the confusion matrices and accuracy of our model after $4000$ steps and at the end of training. Classes are listed in order: silence, unknown, yes, no, up, down, left, right, on, off, stop, go.
+
+\begin{Figure}
+	\centering
+	\includegraphics[width=0.8\textwidth]{train_4000}
+	\captionof{figure}{Confusion matrix after 4000 train steps}
+	\label{img:tr-4000}
+\end{Figure}
+
+\begin{Figure}
+	\centering
+	\includegraphics[width=0.8\textwidth]{train_18000}
+	\captionof{figure}{Confusion matrix after 18000 train steps}
+	\label{img:tr-4000}
+\end{Figure}
+
+\noindent We obtained total accuracy of $88,4\%$. As expected, the two classes hardest to distinguish are "no" and "go". 
+
+\subsection{Application}
+Now, to see this trained model in action, we give it some easy and also some hard audio files to classify to demonstrate it's power.\\
+
+First, the easy part, let's predict a word "yes" without much background noise. It's read audio file and corresponding MFCC that our model obtains are given in figure~\ref{img:yes-clean}
+
+\begin{Figure}
+	\centering
+	\includegraphics[width=0.8\textwidth]{yes_clean}
+	\captionof{figure}{Audio recording of a word "yes"}
+	\label{img:yes-clean}
+\end{Figure}
+
+The model prediction is as follows:
+\begin{itemize}
+	\item yes (score = 0.99882)
+	\item \_unknown\_ (score = 0.00062)
+	\item left (score = 0.00052)
+\end{itemize}
+
+Now we feed our model with extremely noised and shifted audio data for "yes". 
+\begin{Figure}
+	\centering
+	\includegraphics[width=0.8\textwidth]{yes_noised}
+	\captionof{figure}{Extreme audio recording of a word "yes"}
+	\label{img:yes-noised}
+\end{Figure}
+
+Although this is extremely distorted and noised, it seems that our model is pretty confident predicting the following:
+\begin{itemize}
+	\item yes (score = 0.85262)
+	\item left (score = 0.07611)
+	\item \_unknown\_ (score = 0.02981)
+\end{itemize}
+
+
+
 
 %------------------------------------------------
 \section{Different Approaches}
@@ -165,20 +223,26 @@ MFCCs are derived as follows:
 
 \begin{thebibliography}{99}
 
-\bibitem[1]{kilmer-braman-hao}
-Misha E. Kilmer, Karen Braman, Ning Hao.
-\newblock Third Order Tensors as Operators on Matrices: A
-Theoretical and Computational Framework with
-Applications in Imaging
+\bibitem[1]{our-conv}
+Tara N. Sainath, Carolina Parada.
+\newblock Convolutional Neural Networks for Small-footprint Keyword Spotting
 
-\bibitem[2]{kilmer-martin}
-Misha E. Kilmer, Carla D. Martin.
-\newblock Factorization Strategies for Third-order Tensors
+\bibitem[2]{mfcc-feat-ex}
+Shikha Gupta, Jafreezal Jaafar, Wan Fatimah wan Ahmad, Arpit Bansal.
+\newblock Feature Extraction Using MFCC
 
- 
+\bibitem[3]{methods-1}
+Namrata Dave.
+\newblock Feature Extraction Methods LPC, PLP and MFCC In Speech Recognition
+
+\bibitem[4]{feat_ex-methods}
+Urmila Shrawankar, Vilas Thakare.
+\newblock Techniques for Feature Extraction in Speech Recognition System: A Comparative Study
+
 \end{thebibliography}
 
 %----------------------------------------------------------------------------------------
 
 \end{multicols}{2}
 \end{document}
+
