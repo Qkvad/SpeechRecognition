@@ -16,6 +16,8 @@ from matplotlib import cm
 from tensorflow.python.ops import io_ops
 from tensorflow.contrib.framework.python.ops import audio_ops as contrib_audio
 
+import scipy.io.wavfile
+import librosa
 
 def main(_):
   # enable logging
@@ -121,6 +123,12 @@ def main(_):
 
     current_wav = noise_add
 
+    #output_data = np.concatenate(current_wav, axis=0)
+    #print('blurred shape:', output_data.shape)
+    #print(output_data)
+    #scipy.io.wavfile.write('yes_noised.wav', sample_rate, output_data)
+    #librosa.output.write_wav('yes_noised1.wav',output_data,sample_rate)
+
   
   ''' clip all tensor values to segment [-1.0,1.0] '''
   clipped_wav = sess.run(tf.clip_by_value(current_wav, -1.0, 1.0))
@@ -138,18 +146,8 @@ def main(_):
         magnitude_squared=True)        
   spectrogram = sess.run(spectrogram)
   print('spectrogram shape :', spectrogram.shape)
-  
-  '''fig, ax = plt.subplots()
-  cax = ax.matshow(spectrogram[0], 
-                   interpolation='nearest', 
-                   aspect='auto', 
-                   cmap='gist_ncar')
-  fig.colorbar(cax)
-  ax.set_title('spectrogram')
-  plt.show()'''
 
-  print(spectrogram)
-  
+  print(spectrogram)  
   spectrogram_length = desired_samples / window_size_samples
   
   print('spectrogram length:', spectrogram_length)
@@ -164,15 +162,6 @@ def main(_):
   print('mfcc shape :', mfcc.shape)
   #print(mfcc)
   
-  '''fig, ax = plt.subplots()
-  cax = ax.matshow(mfcc[0], 
-                   interpolation='nearest', 
-                   aspect='auto', 
-                   cmap=cm.afmhot, 
-                   origin='lower')
-  fig.colorbar(cax)
-  ax.set_title('MFCC')
-  plt.show()'''
 
   ''' plotting process '''
   f, ((ax1,ax2),(ax3,ax4),(ax5,ax6)) = plt.subplots(3,2,sharey='row')
@@ -207,7 +196,30 @@ def main(_):
 
   plt.tight_layout()
   plt.show()
-    
+
+  
+  ''' plot audio and mfcc only '''
+  f, (ax1,ax2) = plt.subplots(2,1)
+
+  ax1.set_title('noised, shifted audio file; word YES') 
+  ax1.set_xlim([0,current_wav.shape[0]])
+  ax1.set_ylim([1.1*min(current_wav),1.1*max(current_wav)])
+  ax1.plot(current_wav)
+
+  ax2.set_title('MFCC') 
+  ax2.set_xlim([0,mfcc.shape[2]])
+  ax2.set_ylim([0,mfcc.shape[1]])
+  ax2.matshow(mfcc[0], 
+              interpolation='nearest', 
+              aspect='auto', 
+              cmap=plt.get_cmap('Greys_r'),
+              origin='lower')
+  ax2.xaxis.set_ticks_position('bottom')
+  
+  plt.tight_layout()
+  plt.show()
+
+
 
 if __name__=='__main__':
   parser = argparse.ArgumentParser()
@@ -245,13 +257,13 @@ if __name__=='__main__':
   parser.add_argument(
     '--noise_scale_factor',
     type=float,
-    default=0.15,
+    default=0.1,
     help='coefficient to scale noise volume by.')
     
   parser.add_argument(
     '--time_shift',
     type=float,
-    default=100.0,
+    default=1000.0,
     help='range to randomly shift audio in time (ms).')
     
   parser.add_argument(
@@ -275,7 +287,7 @@ if __name__=='__main__':
   parser.add_argument(
     '--dct_coefficient_count',
     type=int,
-    default=40,
+    default=30,
     help='How many bins to use for the MFCC fingerprint')
 
   FLAGS, unparsed = parser.parse_known_args()
