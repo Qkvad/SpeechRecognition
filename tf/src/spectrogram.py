@@ -45,15 +45,15 @@ def main(_):
       wav_decoder.audio
     ])
 
-  #print(audio.shape)
+  print('original:', audio.shape)
   #print(audio)
-  plt.figure(1)
-  plt.plot(np.concatenate(audio,axis=0))
-  plt.show()
+  #plt.figure(1)
+  #plt.plot(np.concatenate(audio,axis=0))
+  #plt.show()
   
   ''' scale shift and padd '''
-  scaled_foreground = audio * FLAGS.scale_factor
-  #print(scaled_foreground)
+  scaled_foreground = sess.run(tf.multiply(audio, FLAGS.scale_factor))
+  print('scaled:', scaled_foreground.shape)
   
   time_shift_amount = np.random.randint(-FLAGS.time_shift, FLAGS.time_shift)
   if time_shift_amount > 0:
@@ -73,71 +73,77 @@ def main(_):
     mode='CONSTANT')   
   padded_foreground = sess.run(padded_foreground)
   
-  plt.figure(2)
-  plt.plot(padded_foreground)
-  plt.show()
+  #plt.figure(2)
+  #plt.plot(padded_foreground)
+  #plt.show()
   
   # slicing 
   sliced_foreground = tf.slice(padded_foreground,
                                time_shift_offset,
-                               [FLAGS.sample_rate, -1])                              
+                               [FLAGS.sample_rate, -1])
   sliced_foreground = sess.run(sliced_foreground) 
   
-  plt.figure(3)
-  plt.plot(sliced_foreground)
-  plt.show()
+  #plt.figure(3)
+  #plt.plot(sliced_foreground)
+  #plt.show()
+
+  test_diff = scaled_foreground - sliced_foreground
+  print('diff between padded and non-padded:', np.linalg.norm(test_diff))
 
   current_wav = sliced_foreground
+  noise_add = current_wav
 
-  if FLAGS.add_noise==True:
+  if FLAGS.add_noise is True:
     ''' loads and reads noise audio file '''
     wav_loader = io_ops.read_file(FLAGS.noise_input_wav)
     wav_decoder = contrib_audio.decode_wav(
       wav_loader, desired_channels=1, desired_samples=desired_samples)  
-    sample_rate, noise_audio = sess.run(
+    noise_sample_rate, noise_audio = sess.run(
       [
         wav_decoder.sample_rate,
         wav_decoder.audio
       ])
     noise_audio *= FLAGS.noise_scale_factor
 
-    plt.figure(4)
-    plt.plot(np.concatenate(noise_audio,axis=0))
-    plt.show()
+    #plt.figure(4)
+    #plt.plot(np.concatenate(noise_audio,axis=0))
+    #plt.show()
 
     ''' add noise to audio '''
     noise_add = sess.run(tf.add(noise_audio, sliced_foreground))
     #print('add:', noise_add)
-    plt.figure(4)
-    plt.plot(np.concatenate(noise_add,axis=0))
-    plt.show()
-    
-    noise_clamp = sess.run(tf.clip_by_value(noise_add, -1.0, 1.0))
-    #print('clamp:',noise_clamp.shape)
-    plt.figure(3)
-    plt.plot(np.concatenate(noise_clamp,axis=0))
-    plt.show()
+    #plt.figure(4)
+    #plt.plot(np.concatenate(noise_add,axis=0))
+    #plt.show()
 
-    current_wav = noise_clamp
+    current_wav = noise_add
 
+  
+  ''' clip all tensor values to segment [-1.0,1.0] '''
+  clipped_wav = sess.run(tf.clip_by_value(current_wav, -1.0, 1.0))
+  #print('clamp:',noise_clamp.shape)
+  #plt.figure(3)
+  #plt.plot(np.concatenate(clipped_wav,axis=0))
+  #plt.show()
 
+  
   ''' create spectrogram '''
   spectrogram = contrib_audio.audio_spectrogram(
-        current_wav,
+        clipped_wav,
         window_size=window_size_samples,
         stride=window_stride_samples,
         magnitude_squared=True)        
   spectrogram = sess.run(spectrogram)
   print('spectrogram shape :', spectrogram.shape)
   
-  fig, ax = plt.subplots()
+  '''fig, ax = plt.subplots()
   cax = ax.matshow(spectrogram[0], 
                    interpolation='nearest', 
                    aspect='auto', 
                    cmap='gist_ncar')
   fig.colorbar(cax)
   ax.set_title('spectrogram')
-  plt.show()
+  plt.show()'''
   
   spectrogram_length = desired_samples / window_size_samples
   
@@ -153,7 +159,7 @@ def main(_):
   print('mfcc shape :', mfcc.shape)
   #print(mfcc)
   
-  fig, ax = plt.subplots()
+  '''fig, ax = plt.subplots()
   cax = ax.matshow(mfcc[0], 
                    interpolation='nearest', 
                    aspect='auto', 
@@ -161,8 +167,37 @@ def main(_):
                    origin='lower')
   fig.colorbar(cax)
   ax.set_title('MFCC')
-  plt.show()
+  plt.show()'''
+
+  ''' plotting process '''
+  f, ((ax1,ax2),(ax3,ax4),(ax5,ax6)) = plt.subplots(3,2,sharey='row')
   
+  ax1.set_title('original audio file')  
+  ax1.plot(audio)
+
+  ax2.set_title('scaled, padded, sliced')
+  ax2.plot(sliced_foreground)
+
+  ax3.set_title('noised')  
+  ax3.plot(noise_add)
+
+  ax4.set_title('clipped')
+  ax4.plot(clipped_wav)
+
+  ax5.set_title('spectrogram')
+  ax5.matshow(spectrogram[0], 
+                   interpolation='nearest', 
+                   aspect='auto', 
+                   cmap='gist_ncar')
+
+  ax6.set_title('MFCC')
+  ax6.matshow(mfcc[0], 
+             interpolation='nearest', 
+             aspect='auto', 
+             cmap=cm.afmhot, 
+             origin='lower')
+
+  plt.show()
     
 
 if __name__=='__main__':
@@ -201,19 +236,19 @@ if __name__=='__main__':
   parser.add_argument(
     '--noise_scale_factor',
     type=float,
-    default=0.1,
+    default=0.0,
     help='coefficient to scale noise volume by.')
     
   parser.add_argument(
     '--time_shift',
     type=float,
     default=200.0,
-    help='range to randomly shift audio in time (ms).')
+    help='range to randomly shift audio in time.')
     
   parser.add_argument(
     '--scale_factor',
     type=float,
-    default=0.8,
+    default=2.0,
     help='coefficient to scale volume by.')
     
   parser.add_argument(
