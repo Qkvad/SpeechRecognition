@@ -132,10 +132,19 @@ After running our code in Octave to generate spectrogram yield the figure~\ref{i
 \begin{Figure}
 	\centering
 	\includegraphics[width=1.0\textwidth]{happy-specgram}
-	\captionof{figure}{Spectogram for audio 'happy'}
+	\captionof{figure}{Spectogram for audio 'happy', 80ms window with 10ms step}
 	\label{img:specgramStanje}
 \end{Figure}
-
+Our code works slightly different, first we scale the volume, then we shift it in time, add background noise and then calculate spectrogram. But for all the features of spectrogram to be easily visible on the paper form, we added the octave function to obtain the standard version of the spectrogram.\\
+There is one more thing we have to dig into, that is getting from spectrogram to the image that is going to feed the machine learning algorithm. Final output of the preprocess is mel-frequency cepstrum \footnote{Cepstrum (the name derived by reversing the first four letters of "spectrum", whereas operations on cepstra are labeled quefrency analysis, liftering or cepstral analysis) is the result of IFT of the logarithm of the estimated spectrum of a signal} coefficients (MFCCs), the coefficients that make up an MFC. MFC is a representation of the short-term power spectrum of a sound, based on a linear cosine transform of a log power spectrum on a nonlinear mel scale of frequency. This frequency wraping can allow for better representation of sound in audio compression. \\
+MFCCs are derived as follows:
+\begin{enumerate}
+	\item Take the Fourier transform of (a window excerpt of) a signal
+	\item Map the powers of the spectrum obtained above onto the mel scale, using triangular overlapping windows
+	\item Take the logs of the powers at each of the mel frequencies
+	\item Take the discrete cosine transform of the list of mel log powers, as if it were a signal
+	\item The MFCCs are the amplitued of the resulting spectrum.
+\end{enumerate}
 %------------------------------------------------
 \section{Machine Learning}
 
