@@ -20,6 +20,14 @@ In this directory, we implement a tensorflow approach to the problem with multip
 
 ### example usage
 
+#### preprocess
+
+To visualize what the data is going through during preprocess, before it enters the convolutional neural network, run, for example:
+```bash
+python tf/src/preprocess.py --input_wav=data/house/0a2b400e_nohash_0.wav
+```
+
+#### cnn
 First off, we need to run training script which will download needed dataset in data/ folder if it is not already there and start training the model. We advise that one first inspects `tf/src/train.py` file, especially possible parser arguments which could be easily understood and tweaked as desired.  
 
 To train a simplest model (neural network with one hidden layer) which is currently default `--model_architecture` parameter, just run the train script from your anaconda environment:
