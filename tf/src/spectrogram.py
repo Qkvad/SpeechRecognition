@@ -1,17 +1,3 @@
-# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
 """Spectogram input/output.
 
 """
@@ -48,37 +34,26 @@ def main(_):
     spectrogram_length = 1 + int(length_minus_window / window_stride_samples)
   fingerprint_size = FLAGS.dct_coefficient_count * spectrogram_length
   ''' ------------- '''
-  
+    
+  ''' loads and reads audio file '''
   wav_loader = io_ops.read_file(FLAGS.input_wav)
   wav_decoder = contrib_audio.decode_wav(
-    wav_loader, desired_channels=1, desired_samples=desired_samples)
-   
+    wav_loader, desired_channels=1, desired_samples=desired_samples)  
   sample_rate, audio = sess.run(
     [
       wav_decoder.sample_rate,
       wav_decoder.audio
     ])
-    
-  '''print(audio.shape)
-  step=int(10*sample_rate/1000)
-  window=int(30*sample_rate/1000)
-  fftn=1
-  while fftn<window:
-    fftn*=2
-  S,f,t=plt.specgram(x=audio[0], NFFT=fftn, Fs=sample_rate,
-         window=window, pad_to=window-step)
-  S=abs(S[2:fftn*4000/sample_rate][:])
-  S=S/max(S[:])
-  S=max(S,10^(-40/10))
-  S=min(S,10^(-3/10))
-  res=np.flipud(math.log(S))'''
-  #plt.figure(1)
-  #plt.plot(np.concatenate(audio,axis=0))
-  #plt.show()
+
+  #print(audio.shape)
+  #print(audio)
+  plt.figure(1)
+  plt.plot(np.concatenate(audio,axis=0))
+  plt.show()
   
-  ''' '''
-  
-  scaled_foreground = audio
+  ''' scale shift and padd '''
+  scaled_foreground = audio * FLAGS.scale_factor
+  #print(scaled_foreground)
   
   time_shift_amount = np.random.randint(-FLAGS.time_shift, FLAGS.time_shift)
   if time_shift_amount > 0:
@@ -88,40 +63,70 @@ def main(_):
     time_shift_padding = [[0, -time_shift_amount], [0, 0]]
     time_shift_offset = [-time_shift_amount, 0]
     
-  print('shifting :', time_shift_padding, 'ms')
+  print('padding :', time_shift_offset, 'ms')
+  print('shifting :', time_shift_padding)
     
+  # padding
   padded_foreground = tf.pad(
     scaled_foreground,
     time_shift_padding,
-    mode='CONSTANT')
-    
+    mode='CONSTANT')   
   padded_foreground = sess.run(padded_foreground)
   
-  #plt.figure(0)
-  #plt.plot(padded_foreground)
-  #plt.show()
+  plt.figure(2)
+  plt.plot(padded_foreground)
+  plt.show()
   
-  print('padding :', time_shift_offset, 'ms')
-  
+  # slicing 
   sliced_foreground = tf.slice(padded_foreground,
                                time_shift_offset,
-                               [FLAGS.sample_rate, -1])
-                               
-
+                               [FLAGS.sample_rate, -1])                              
   sliced_foreground = sess.run(sliced_foreground) 
   
-  #plt.figure(1)
-  #plt.plot(sliced_foreground)
-  #plt.show()
-  
-  ''' '''
-  
+  plt.figure(3)
+  plt.plot(sliced_foreground)
+  plt.show()
+
+  current_wav = sliced_foreground
+
+  if FLAGS.add_noise==True:
+    ''' loads and reads noise audio file '''
+    wav_loader = io_ops.read_file(FLAGS.noise_input_wav)
+    wav_decoder = contrib_audio.decode_wav(
+      wav_loader, desired_channels=1, desired_samples=desired_samples)  
+    sample_rate, noise_audio = sess.run(
+      [
+        wav_decoder.sample_rate,
+        wav_decoder.audio
+      ])
+    noise_audio *= FLAGS.noise_scale_factor
+
+    plt.figure(4)
+    plt.plot(np.concatenate(noise_audio,axis=0))
+    plt.show()
+
+    ''' add noise to audio '''
+    noise_add = sess.run(tf.add(noise_audio, sliced_foreground))
+    #print('add:', noise_add)
+    plt.figure(4)
+    plt.plot(np.concatenate(noise_add,axis=0))
+    plt.show()
+    
+    noise_clamp = sess.run(tf.clip_by_value(noise_add, -1.0, 1.0))
+    #print('clamp:',noise_clamp.shape)
+    plt.figure(3)
+    plt.plot(np.concatenate(noise_clamp,axis=0))
+    plt.show()
+
+    current_wav = noise_clamp
+
+
+  ''' create spectrogram '''
   spectrogram = contrib_audio.audio_spectrogram(
-        sliced_foreground,
+        current_wav,
         window_size=window_size_samples,
         stride=window_stride_samples,
-        magnitude_squared=True)
-        
+        magnitude_squared=True)        
   spectrogram = sess.run(spectrogram)
   print('spectrogram shape :', spectrogram.shape)
   
@@ -132,7 +137,6 @@ def main(_):
                    cmap='gist_ncar')
   fig.colorbar(cax)
   ax.set_title('spectrogram')
-  #Showing mfcc_data
   plt.show()
   
   spectrogram_length = desired_samples / window_size_samples
@@ -140,19 +144,17 @@ def main(_):
   print('spectrogram length:', spectrogram_length)
   print('fingerprint_size  :', fingerprint_size)
   
-  ''' '''
-  
+  ''' create mfcc '''
   mfcc = contrib_audio.mfcc(
         spectrogram,
         wav_decoder.sample_rate,
-        dct_coefficient_count=FLAGS.dct_coefficient_count)
-        
-  mfcc_features = sess.run(mfcc)#.flatten()
+        dct_coefficient_count=FLAGS.dct_coefficient_count)       
+  mfcc = sess.run(mfcc)#.flatten()
   print('mfcc shape :', mfcc.shape)
   #print(mfcc)
   
   fig, ax = plt.subplots()
-  cax = ax.matshow(mfcc_features[0], 
+  cax = ax.matshow(mfcc[0], 
                    interpolation='nearest', 
                    aspect='auto', 
                    cmap=cm.afmhot, 
@@ -183,6 +185,24 @@ if __name__=='__main__':
     type=int,
     default=16000,
     help='expected sample rate of wav files.')
+
+  parser.add_argument(
+    '--add_noise',
+    type=bool,
+    default=True,
+    help='whether to add noise.')
+
+  parser.add_argument(
+    '--noise_input_wav',
+    type=str,
+    default='data/_background_noise_/doing_the_dishes.wav',
+    help='noise .wav files.')
+
+  parser.add_argument(
+    '--noise_scale_factor',
+    type=float,
+    default=0.1,
+    help='coefficient to scale noise volume by.')
     
   parser.add_argument(
     '--time_shift',
@@ -191,7 +211,7 @@ if __name__=='__main__':
     help='range to randomly shift audio in time (ms).')
     
   parser.add_argument(
-    '--scale_volume',
+    '--scale_factor',
     type=float,
     default=0.8,
     help='coefficient to scale volume by.')
@@ -209,10 +229,10 @@ if __name__=='__main__':
     help=' --- ')
     
   parser.add_argument(
-      '--dct_coefficient_count',
-      type=int,
-      default=40,
-      help='How many bins to use for the MFCC fingerprint')
+    '--dct_coefficient_count',
+    type=int,
+    default=40,
+    help='How many bins to use for the MFCC fingerprint')
 
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
