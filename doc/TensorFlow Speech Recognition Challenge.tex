@@ -30,7 +30,7 @@
 \pagestyle{fancy} % All pages have headers and footers
 \fancyhead{} % Blank out the default header
 \fancyfoot{} % Blank out the default footer
-\fancyhead[C]{TensorFlow Speech Recognition Challenge $\bullet$ May 2018} % Custom header text
+\fancyhead[C]{TensorFlow Speech Recognition $\bullet$ May 2018} % Custom header text
 \fancyfoot[RO,LE]{\thepage} % Custom footer text
 
 \usepackage{titling} % Customizing the title section
@@ -61,7 +61,7 @@
 
 \pretitle{\begin{center}\Huge\bfseries} % Article title formatting
 \posttitle{\end{center}} % Article title closing formatting
-\title{TensorFlow Speech Recognition Challenge} % Article title
+\title{TensorFlow Speech Recognition} % Article title
 
 \author{%
 \textsc{Petra Br\v{c}i\'c}\\% \\[1ex] 
@@ -81,7 +81,7 @@
 \renewcommand{\maketitlehookd}{%
 \noindent \textbf{\\Abstract:} We are witnessing the significant development of the blooming relationship between science and technology. Humanity is striving on making everyday life easier and more controllable by the integration of the intelligent machines. We want to control those machine easier, such as by spoken commands. This is where this project comes in and answers that question.
 \\\\
-\textbf{Keywords:} tensorflow, speech recognition, audio recognition, feature extraction, MFCC.
+\textbf{Keywords:} tensorflow, speech recognition, audio recognition, feature extraction, MFCC, convolutional neural network.
 }
 
 
@@ -91,8 +91,8 @@
 
 % Print the title and table of contents
 \maketitle
-\tableofcontents
-\newpage
+%\tableofcontents
+%\newpage
 
 %----------------------------------------------------------------------------------------
 %	ARTICLE CONTENTS
@@ -100,13 +100,11 @@
 \begin{multicols}{2}
 
 \section{Introduction}
-
-\ldots
-for which our code can be found at our \hyperref[https://github.com/Qkvad/3rdOrderTensors]{GitHub repository}\footnote{https://github.com/Qkvad/SpeechRecognition}.
+This project was given by Kaggle as Tensorflow challenge\footnote{https://www.kaggle.com/c/tensorflow-speech-recognition-challenge}, where the task is to correctly classify the audio recording of a spoken words. In this paper, we discuss audio transformations needed to extract shared features to feed the convolutional neural network classifier and present results we obtained on couple of examples. All of the code as well as usage instructions can be found at our \hyperref[https://github.com/Qkvad/SpeechRecognition]{GitHub repository}\footnote{https://github.com/Qkvad/SpeechRecognition}.
 
 %------------------------------------------------
 \section{Data}
-This project was given by Kaggle as Tensorflow challenge, where the task is to correctly classify the audio recording. Dataset was given by Tensorflow as one second audio clips of different words spoken by different people. Dataset can automaticly be downloaded when starting the train part of machine learning solution to the problem. 
+Dataset was given by Tensorflow as one second audio clips of different words spoken by different people. Dataset can automaticly be downloaded when starting the train part of machine learning solution to the problem. 
 The goal is to have a model that tries to classify a one second audio clip as either silence, an unknown word, "yes", "no", "up", "down", "left", "right", "on", "off", "stop" and "go", even though more words can be found in the dataset and included in the training process. Each of the words is separated into files named as the recordings of the word they present. In order to make these clips as realistic as they would be in real life, the background noise is added in preprocess part of the code. There is a file of few background noises within the dataset that is downloaded. 
 Each audio file is encoded with the id of the person who recorded the word, followed by nohash and a number from 0, specifing the time the same person recorded the word.  
 Apart from the audio files that take up the majority of the data file, testing and validation lists can be found too. Each of those text file contains a list of the audio clips so that dataset can be patitioned in training, validation and test set. 
